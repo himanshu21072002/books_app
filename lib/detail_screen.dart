@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:books_app/cart_provider.dart';
 import 'package:books_app/cart_screen.dart';
 import 'package:books_app/db.dart';
@@ -46,7 +48,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
             onPressed: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => CartScreen()));
+                  MaterialPageRoute(builder: (context) => const CartScreen()));
             },
           )
         ],
@@ -174,7 +176,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   print(error.toString());
                 });
               },
-              style: ElevatedButton.styleFrom(primary: Colors.red[300]),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red[300]),
               child: RichText(
                 text: TextSpan(
                   style: const TextStyle(color: Colors.white),

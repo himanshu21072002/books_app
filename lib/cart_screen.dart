@@ -358,7 +358,7 @@ class ReusableWidget extends StatelessWidget {
   final String title, value;
   final double height, width;
   const ReusableWidget(
-      {required this.title,
+      {super.key, required this.title,
       required this.value,
       required this.height,
       required this.width});
