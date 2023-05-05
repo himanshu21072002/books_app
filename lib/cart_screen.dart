@@ -3,8 +3,8 @@ import 'package:books_app/db.dart';
 import 'package:books_app/listDataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quickalert/quickalert.dart';
 
-import 'detail_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -311,7 +311,19 @@ class _CartScreenState extends State<CartScreen> {
                     child: InkWell(
                       onTap: value.getCounter()>5
                           ? null
-                          : () {},
+                          : () {
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.confirm,
+                          text: 'Do you want to checkout?',
+                          confirmBtnText: 'Yes',
+                          cancelBtnText: 'No',
+                          confirmBtnColor: Colors.green,
+                          onConfirmBtnTap: (){
+                            print("moving to next screen");
+                          }
+                        );
+                      },
                       child: Container(
                         width: width * 0.8,
                         height: height * 0.082,

@@ -40,6 +40,7 @@ dependencies:
   provider: ^6.0.5
   shared_preferences: ^2.1.0
   path_provider: ^2.0.14
+  quickalert: ^1.0.1
 
 
 dev_dependencies:
