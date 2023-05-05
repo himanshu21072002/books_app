@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
@@ -27,7 +29,7 @@ class DBHelper {
 
   _onCreate(Database db, int version) async {
     await db.execute(
-        'CREATE TABLE cart (title TEXT PRIMARY KEY ,cover_image_url TEXT,price_in_dollar REAL,quantity INTEGER)');
+        'CREATE TABLE cart (id INTEGER PRIMARY KEY ,title TEXT,cover_image_url TEXT,price_in_dollar REAL,quantity INTEGER,finalPrice REAL)');
   }
 
   Future<DataModel> insert(DataModel cart) async {
@@ -44,12 +46,21 @@ class DBHelper {
 
   }
 
-  Future<int> delete(String? id)async{
+  Future<int> delete(int? id)async{
     var dbClient = await db ;
     return await dbClient!.delete(
         'cart',
         where: 'id = ?',
         whereArgs: [id]
+    );
+  }
+  Future<int> updateQuantity(DataModel cart)async{
+    var dbClient = await db ;
+    return await dbClient!.update(
+        'cart',
+        cart.toMap(),
+        where: 'id = ?',
+        whereArgs: [cart.id]
     );
   }
 

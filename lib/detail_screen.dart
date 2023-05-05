@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class DetailScreen extends StatefulWidget {
+   bool? onClick;
   final Map<String, dynamic> map;
-  const DetailScreen({Key? key, required this.map}) : super(key: key);
+  final int? count;
+   DetailScreen({Key? key, required this.map, this.count, this.onClick})
+      : super(key: key);
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -145,20 +148,29 @@ class _DetailScreenState extends State<DetailScreen> {
             height: height * 0.08,
             width: width * 0.8,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: widget.onClick==true?null:() {
+                setState(() {
+                  widget.onClick=true;
+                });
+                const message = SnackBar(
+                  content: Text('Product added to the cart'),
+                  duration: Duration(seconds: 1),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(message);
                 dbHelper!
                     .insert(DataModel(
                   title: widget.map['title'],
                   cover_image_url: widget.map['cover_image_url'],
                   price_in_dollar: widget.map['price_in_dollar'],
                   quantity: 1,
+                  id: widget.count,
+                  finalPrice: widget.map['price_in_dollar'],
                 ))
                     .then((value) {
                   cart.addTotalPrice(widget.map['price_in_dollar']);
                   cart.addCounter();
                   print('product added successfully');
                 }).onError((error, stackTrace) {
-                  print('idhar error aa rha');
                   print(error.toString());
                 });
               },

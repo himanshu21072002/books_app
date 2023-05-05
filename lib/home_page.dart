@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                             elevation: 5,
                             child: GestureDetector(
                               onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=>DetailScreen(map: _items[count],)));
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=>DetailScreen(map: _items[count],count: count,onClick: false,)));
                               },
                               child: Container(
                                 decoration: BoxDecoration(

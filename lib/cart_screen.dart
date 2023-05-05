@@ -49,14 +49,14 @@ class _CartScreenState extends State<CartScreen> {
                     fontSize: height * 0.05,
                   ),
                 ),
-                Text(" ($totalItem)"),
+                Text(" (${cart.getCounter()})"),
               ],
             ),
           ),
           FutureBuilder(
               future: cart.getData(),
               builder: (context, AsyncSnapshot<List<DataModel>> snapshot) {
-                if (snapshot.hasData) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   totalItem = snapshot.data!.length;
                   print(
                       "${snapshot.data![0].title}\n Length is: ${snapshot.data!.length}");
@@ -119,7 +119,7 @@ class _CartScreenState extends State<CartScreen> {
                                               height: height * 0.01,
                                             ),
                                             Text(
-                                              "\$ ${snapshot.data![count].price_in_dollar}",
+                                              "\$ ${snapshot.data![count].finalPrice!.toStringAsFixed(2)}",
                                               style: TextStyle(
                                                   fontSize: height * 0.03,
                                                   fontWeight: FontWeight.bold,
@@ -128,27 +128,136 @@ class _CartScreenState extends State<CartScreen> {
                                             Row(
                                               children: [
                                                 Text(
-                                                  "Qty: " +
-                                                      snapshot
-                                                          .data![count].quantity
-                                                          .toString(),
+                                                  "Qty: ${snapshot.data![count].quantity}",
                                                   style: TextStyle(
                                                       color: Colors.grey,
                                                       fontSize: height * 0.02),
                                                 ),
                                                 SizedBox(
-                                                  width: width * 0.4,
+                                                  width: width * 0.1,
                                                 ),
                                                 IconButton(
                                                     onPressed: () {
-                                                      dbHelper!.delete(snapshot.data![count].title.toString());
+                                                      int quantity = snapshot
+                                                          .data![count]
+                                                          .quantity!;
+                                                      double price = snapshot
+                                                          .data![count]
+                                                          .price_in_dollar!;
+                                                      quantity++;
+                                                      double? newPrice =
+                                                          price * quantity;
+                                                      dbHelper!
+                                                          .updateQuantity(
+                                                              DataModel(
+                                                        id: snapshot
+                                                            .data![count].id!,
+                                                        title: snapshot
+                                                            .data![count].title!
+                                                            .toString(),
+                                                        price_in_dollar: snapshot
+                                                            .data![count]
+                                                            .price_in_dollar,
+                                                        cover_image_url:
+                                                            snapshot
+                                                                .data![count]
+                                                                .cover_image_url
+                                                                .toString(),
+                                                        finalPrice: newPrice,
+                                                        quantity: quantity,
+                                                      ))
+                                                          .then((value) {
+                                                        newPrice = 0;
+                                                        quantity = 0;
+                                                        cart.addTotalPrice(
+                                                            double.parse(snapshot
+                                                                .data![count]
+                                                                .price_in_dollar
+                                                                .toString()));
+                                                      }).onError((error,
+                                                              stackTrace) {
+                                                        print(error.toString());
+                                                      });
+                                                    },
+                                                    icon: Icon(
+                                                      Icons.add_circle_outline,
+                                                      size: height * 0.04,
+                                                      color: Colors.orange,
+                                                    )),
+                                                SizedBox(
+                                                  width: width * 0.02,
+                                                ),
+                                                IconButton(
+                                                    onPressed: () {
+                                                      int quantity = snapshot
+                                                          .data![count]
+                                                          .quantity!;
+                                                      double price = snapshot
+                                                          .data![count]
+                                                          .price_in_dollar!;
+                                                      quantity--;
+                                                      double? newPrice =
+                                                          price * quantity;
+                                                      if (quantity > 0) {
+                                                        dbHelper!
+                                                            .updateQuantity(
+                                                                DataModel(
+                                                          id: snapshot
+                                                              .data![count].id!,
+                                                          title: snapshot
+                                                              .data![count]
+                                                              .title!
+                                                              .toString(),
+                                                          price_in_dollar: snapshot
+                                                              .data![count]
+                                                              .price_in_dollar,
+                                                          cover_image_url:
+                                                              snapshot
+                                                                  .data![count]
+                                                                  .cover_image_url
+                                                                  .toString(),
+                                                          finalPrice: newPrice,
+                                                          quantity: quantity,
+                                                        ))
+                                                            .then((value) {
+                                                          newPrice = 0;
+                                                          quantity = 0;
+                                                          cart.removeTotalPrice(
+                                                              double.parse(snapshot
+                                                                  .data![count]
+                                                                  .price_in_dollar
+                                                                  .toString()));
+                                                        }).onError((error,
+                                                                stackTrace) {
+                                                          print(
+                                                              error.toString());
+                                                        });
+                                                      }
+                                                    },
+                                                    icon: Icon(
+                                                      Icons
+                                                          .remove_circle_outline_rounded,
+                                                      size: height * 0.04,
+                                                      color: Colors.orange,
+                                                    )),
+                                                SizedBox(
+                                                  width: width * 0.06,
+                                                ),
+                                                IconButton(
+                                                    onPressed: () {
+                                                      dbHelper!.delete(snapshot
+                                                          .data![count].id);
                                                       cart.removerCounter();
-                                                      cart.removeTotalPrice(double.parse(snapshot.data![count].price_in_dollar.toString()));
-
+                                                      cart.removeTotalPrice(
+                                                          double.parse(snapshot
+                                                              .data![count]
+                                                              .finalPrice
+                                                              .toString()));
                                                     },
                                                     icon: Icon(
                                                       Icons.delete_outline,
                                                       color: Colors.purple[200],
+                                                      size: height * 0.04,
                                                     ))
                                               ],
                                             ),
@@ -162,12 +271,31 @@ class _CartScreenState extends State<CartScreen> {
                             );
                           }));
                 } else {
-                  return const Text('No data');
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: height * 0.3,
+                      ),
+                      Center(
+                        child: Text(
+                          'Your cart is empty',
+                          style: TextStyle(
+                            fontSize: height * 0.05,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.add_shopping_cart,
+                        size: height * 0.08,
+                        color: Colors.red,
+                      )
+                    ],
+                  );
                 }
               }),
           Consumer<CartProvider>(builder: (context, value, child) {
             return Visibility(
-              visible: value.getTotalPrice().toStringAsFixed(2) == "0.00"
+              visible: value.getTotalPrice().toStringAsFixed(2) == "0.00"|| value.getTotalPrice().toStringAsFixed(2) =="-0.00"
                   ? false
                   : true,
               child: Column(
@@ -181,12 +309,16 @@ class _CartScreenState extends State<CartScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: InkWell(
-                      onTap: () {},
+                      onTap: value.getCounter()>5
+                          ? null
+                          : () {},
                       child: Container(
                         width: width * 0.8,
                         height: height * 0.082,
                         decoration: BoxDecoration(
-                            color: Colors.red[300],
+                            color: value.getCounter()>5
+                                ? Colors.grey
+                                : Colors.red[300],
                             borderRadius: BorderRadius.circular(height * 0.05)),
                         child: Center(
                           child: Text(
@@ -232,7 +364,7 @@ class ReusableWidget extends StatelessWidget {
           Text(
             value.toString(),
             style: TextStyle(fontSize: height * 0.04, color: Colors.red[300]),
-          )
+          ),
         ],
       ),
     );
